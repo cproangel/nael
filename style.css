@@ -120,6 +120,18 @@ header p {
     font-weight: 400;
 }
 
+/* Mobile img style (hidden on PC) */
+.mobile-img {
+    display: none;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 12px;
+    margin-top: 20px;
+    object-fit: cover;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
 /* Project List */
 .project-list {
     display: flex;
@@ -365,6 +377,15 @@ footer {
 }
 
 @media (max-width: 1024px) {
+    * {
+        cursor: auto !important;
+    }
+    .cursor, .hover-reveal {
+        display: none !important;
+    }
+    .mobile-img {
+        display: block !important;
+    }
     .project-item {
         flex-direction: column;
         align-items: flex-start;

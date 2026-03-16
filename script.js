@@ -12,10 +12,18 @@ let loadedImagesCount = 0;
 let totalImagesToLoad = 0;
 const preloadedImages = []; // Cache to store Image objects to prevent GC
 
-// Count how many images we actually need to load
+// Count how many images we actually need to load, and inject mobile images
 items.forEach(item => {
-    if (item.getAttribute('data-img')) {
+    const imgUrl = item.getAttribute('data-img');
+    if (imgUrl) {
         totalImagesToLoad++;
+        
+        // Inject mobile image
+        const mobileImg = document.createElement('img');
+        mobileImg.src = imgUrl;
+        mobileImg.className = 'mobile-img';
+        mobileImg.alt = 'Preview';
+        item.appendChild(mobileImg);
     }
 });
 
