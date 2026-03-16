@@ -3,6 +3,52 @@ const reveal = document.querySelector('.hover-reveal');
 const revealImg = document.querySelector('.reveal-img');
 const cursor = document.querySelector('.cursor');
 
+// Preloader and Image Preloading
+const preloader = document.querySelector('.preloader');
+const preloaderProgress = document.querySelector('.loader-progress');
+const preloaderText = document.querySelector('.loader-text');
+
+let loadedImagesCount = 0;
+let totalImagesToLoad = 0;
+const preloadedImages = []; // Cache to store Image objects to prevent GC
+
+// Count how many images we actually need to load
+items.forEach(item => {
+    if (item.getAttribute('data-img')) {
+        totalImagesToLoad++;
+    }
+});
+
+if (totalImagesToLoad > 0) {
+    items.forEach(item => {
+        const imgUrl = item.getAttribute('data-img');
+        if (imgUrl) {
+            const img = new Image();
+            
+            // On load or error, update progress
+            img.onload = img.onerror = () => {
+                loadedImagesCount++;
+                const percentage = Math.floor((loadedImagesCount / totalImagesToLoad) * 100);
+                if(preloaderProgress) preloaderProgress.style.width = percentage + '%';
+                if(preloaderText) preloaderText.textContent = `Loading... ${percentage}%`;
+                
+                if (loadedImagesCount === totalImagesToLoad) {
+                    // All images loaded
+                    setTimeout(() => {
+                        if(preloader) preloader.classList.add('hidden');
+                    }, 500); // 500ms delay to smoothly finish bar
+                }
+            };
+            
+            img.src = imgUrl; // Start loading
+            preloadedImages.push(img);
+        }
+    });
+} else {
+    // No images to load
+    if(preloader) preloader.classList.add('hidden');
+}
+
 const modalOverlay = document.getElementById('modal-backdrop');
 const modalTitle = document.getElementById('modal-title');
 const modalDesc = document.getElementById('modal-desc');
