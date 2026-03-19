@@ -434,7 +434,11 @@ footer .site-logo {
     left: 0;
     width: 100%;
     overflow: hidden;
-    background: #000;
+    background-color: #000;
+    background-image: url('foto/beto 2.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center 75%;
     transform: translate3d(0, 0, 0) scale(1);
     transform-origin: center center;
     opacity: 1;
@@ -1098,32 +1102,428 @@ footer {
 }
 
 @media (max-width: 768px) {
+    .container {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
     .hero {
         min-height: 100svh;
-        padding: 120px 6% 65px;
+        padding: 148px 20px 56px;
     }
     .heroEffects,
     .heroEffects .bg,
     .heroEffects .shade {
         height: 100svh;
     }
+    .navbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 14px 20px 16px;
+    }
+    .navbar .brand-container {
+        justify-content: center;
+    }
+    .contact {
+        width: 100%;
+    }
+    .contact .phone-btn {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 0.92rem;
+    }
+    .contact .phone-btn .ui-anim-txt-wrapper {
+        min-width: 0;
+    }
+    .contact .phone-btn .ui-anim-txt-1 {
+        white-space: normal;
+        text-align: center;
+        line-height: 1.25;
+    }
+    .brand-text {
+        font-size: 1.08rem;
+        white-space: normal;
+    }
+    .site-logo {
+        height: 34px;
+    }
+    .hero-content {
+        width: 100%;
+    }
+    .hero-content h1 {
+        font-size: clamp(1.85rem, 8.8vw, 2.55rem);
+        line-height: 1.05;
+        margin-bottom: 16px;
+    }
+    .hero-content h1 span {
+        -webkit-text-stroke: 1.5px var(--accent);
+    }
+    .hero-content p {
+        max-width: none;
+        font-size: 0.96rem;
+        margin-bottom: 28px;
+    }
+    .feature-card {
+        padding: 24px 20px;
+    }
+    .feature-card h3 {
+        font-size: 1rem;
+    }
+    .feature-card p {
+        font-size: 0.95rem;
+    }
     .heroEffects .arrow {
         display: none;
     }
+    .section-title {
+        margin-bottom: 36px;
+    }
+    .section-title h2 {
+        font-size: clamp(1.9rem, 9vw, 2.7rem);
+    }
+    .section-title h2 span {
+        -webkit-text-stroke: 1.2px var(--text-color);
+    }
+    .project-item {
+        padding: 24px 20px;
+        gap: 16px;
+    }
+    .project-item:hover {
+        padding-left: 20px;
+    }
+    .item-title {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .item-title h2 {
+        font-size: 1.1rem;
+    }
+    .item-title h3 {
+        font-size: clamp(1.2rem, 6vw, 1.5rem);
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+    .item-details {
+        width: 100%;
+    }
+    .item-details p {
+        display: block;
+        width: fit-content;
+        max-width: 100%;
+        font-size: 0.95rem;
+        padding: 8px 14px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .mobile-img {
+        width: 100%;
+        max-width: none;
+        aspect-ratio: 4 / 3;
+        margin-top: 8px;
+    }
+    .glass-modal {
+        width: calc(100vw - 28px);
+        max-width: none;
+        max-height: min(88svh, 760px);
+    }
+    .new-glass-effect {
+        padding: 24px 18px;
+        border-radius: 20px;
+    }
+    .title {
+        font-size: 1.1rem;
+        white-space: normal;
+        text-overflow: clip;
+    }
+    .description {
+        font-size: 0.98rem;
+        margin-bottom: 24px;
+    }
+    .glass-btn {
+        align-self: stretch;
+        text-align: center;
+    }
+    .loader-content {
+        width: min(300px, calc(100vw - 40px));
+    }
+    .order-section {
+        padding-top: 24px;
+        padding-bottom: 24px;
+    }
     .order-grid {
         flex-direction: column;
-        padding: 30px;
+        gap: 28px;
+        padding: 22px 18px;
+        border-radius: 20px;
+    }
+    .order-info,
+    .order-form-container {
+        min-width: 0;
+    }
+    .contact-details p,
+    .order-desc {
+        font-size: 1rem;
+    }
+    .social-icons {
+        flex-wrap: wrap;
+    }
+    .social-icons a {
+        width: 44px;
+        height: 44px;
+    }
+    .order-form-container h2 {
+        font-size: 1.45rem;
+    }
+    .order-form input {
+        width: 100%;
+        min-width: 0;
+        padding: 14px 16px;
+        font-size: 1rem;
     }
     .order-form .input-group {
         flex-direction: column;
     }
     .order-btn {
         width: 100%;
+        padding: 14px 20px;
     }
     main.container {
-        padding-top: 100px;
+        padding-top: 84px;
     }
     .hero + main.container {
-        padding-top: 115px;
+        padding-top: 96px;
+    }
+    footer {
+        margin-top: 64px;
+        padding: 56px 20px 32px;
+    }
+    footer .site-logo {
+        height: 46px;
+    }
+    .footer-content p {
+        font-size: 0.95rem;
+    }
+    .footer-phone {
+        font-size: clamp(1.2rem, 7vw, 1.6rem);
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 480px) {
+    .brand-text {
+        font-size: 0.98rem;
+    }
+    .contact .phone-btn {
+        font-size: 0.86rem;
+        padding: 11px 14px;
+        gap: 8px;
+    }
+    .contact .phone-btn .ui-anim-btn-svg {
+        width: 16px;
+        height: 16px;
+    }
+    .hero-content h1 {
+        font-size: clamp(1.7rem, 8.6vw, 2.1rem);
+    }
+    .project-item {
+        padding: 22px 16px;
+    }
+    .item-title h3 {
+        font-size: 1.1rem;
+    }
+    .new-glass-effect {
+        padding: 20px 16px;
+    }
+}
+
+@media (max-width: 900px) and (hover: none), (max-width: 900px) and (pointer: coarse) {
+    .container {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+    .navbar {
+        position: sticky;
+        top: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+        padding: 10px 12px 12px;
+    }
+    .navbar .brand-container {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        min-width: 0;
+    }
+    .brand-text {
+        font-size: clamp(0.88rem, 5.8vw, 1.18rem);
+        line-height: 1.05;
+        letter-spacing: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .site-logo {
+        height: 32px;
+    }
+    .contact {
+        width: 100%;
+        min-width: 0;
+    }
+    .contact .phone-btn {
+        width: 100%;
+        min-width: 0;
+        justify-content: center;
+        padding: 10px 12px;
+        gap: 8px;
+    }
+    .contact .phone-btn .ui-anim-txt-wrapper,
+    .contact .phone-btn .ui-anim-txt-1 {
+        min-width: 0;
+        display: block;
+    }
+    .contact .phone-btn .ui-anim-btn-svg {
+        display: none;
+    }
+    .contact .phone-btn .ui-anim-txt-1 {
+        font-size: clamp(0.78rem, 4vw, 0.9rem);
+        line-height: 1.15;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        text-align: center;
+        letter-spacing: 0;
+    }
+    .heroEffects {
+        height: auto;
+        min-height: auto;
+    }
+    .heroEffects .bg,
+    .heroEffects .shade {
+        position: absolute;
+        inset: 0;
+        height: auto;
+        width: 100%;
+    }
+    .heroEffects .hero-beams-canvas {
+        display: none;
+    }
+    .hero {
+        display: block;
+        min-height: auto;
+        padding: 28px 14px 24px;
+        text-align: left;
+        overflow: clip;
+    }
+    .hero-content {
+        width: 100%;
+        max-width: none;
+        transform: none !important;
+        opacity: 1 !important;
+    }
+    .hero-content h1 {
+        font-size: clamp(1.55rem, 6.8vw, 1.95rem);
+        line-height: 1.03;
+        margin-bottom: 10px;
+        text-align: left;
+    }
+    .hero-content h1 span {
+        -webkit-text-stroke: 1px var(--accent);
+    }
+    .hero-content p {
+        max-width: none;
+        font-size: 0.88rem;
+        line-height: 1.45;
+        margin: 0 0 16px;
+        text-align: left;
+    }
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        max-width: none;
+        margin: 0;
+    }
+    .feature-card {
+        padding: 16px 14px;
+        border-radius: 14px;
+    }
+    .feature-card h3 {
+        font-size: clamp(0.92rem, 4.7vw, 1rem);
+        line-height: 1.2;
+        margin-bottom: 8px;
+    }
+    .feature-card p {
+        font-size: 0.86rem;
+        line-height: 1.38;
+    }
+    main.container {
+        padding-top: 28px;
+    }
+    .hero + main.container {
+        padding-top: 28px;
+    }
+    .project-list {
+        gap: 12px;
+    }
+    .project-item {
+        display: block;
+        gap: 12px;
+        padding: 16px 14px;
+        border-radius: 14px;
+    }
+    .project-item > * {
+        min-width: 0;
+    }
+    .project-item:hover {
+        padding-left: 14px;
+    }
+    .item-title {
+        display: block;
+        width: 100%;
+    }
+    .item-title h2 {
+        font-size: clamp(0.86rem, 4.8vw, 1rem);
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+    .item-title h3 {
+        font-size: clamp(0.96rem, 5.5vw, 1.14rem);
+        line-height: 1.12;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+    .item-details {
+        width: 100%;
+        margin-top: 10px;
+    }
+    .item-details p {
+        display: block;
+        width: 100%;
+        max-width: none;
+        font-size: 0.84rem;
+        border-radius: 16px;
+        padding: 8px 12px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        line-height: 1.25;
+    }
+    .mobile-img {
+        width: 100%;
+        max-width: none;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-top: 10px;
+    }
+    .glass-modal {
+        width: calc(100vw - 20px);
+        max-width: none;
+    }
+    .new-glass-effect {
+        max-height: 86svh;
+        overflow-y: auto;
     }
 }
