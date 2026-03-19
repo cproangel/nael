@@ -4,10 +4,274 @@ const revealImg = document.querySelector('.reveal-img');
 const cursor = document.querySelector('.cursor');
 const heroSection = document.querySelector('.heroEffects');
 const heroBg = heroSection ? heroSection.querySelector('.bg') : null;
+const heroBeamsCanvas = heroBg ? heroBg.querySelector('.hero-beams-canvas') : null;
 const heroShade = heroSection ? heroSection.querySelector('.shade') : null;
 const heroContent = heroSection ? heroSection.querySelector('.hero-content') : null;
 const heroArrow = heroSection ? heroSection.querySelector('.arrow') : null;
 const catalogSection = document.getElementById('catalog');
+const preloader = document.querySelector('.preloader');
+const preloaderProgress = document.querySelector('.loader-progress');
+const preloaderText = document.querySelector('.loader-text');
+
+let totalAssetsToLoad = heroBeamsCanvas ? 1 : 0;
+let loadedAssetsCount = 0;
+const completedPreloadAssets = new Set();
+
+function updatePreloaderProgress() {
+    if (totalAssetsToLoad <= 0) {
+        if (preloaderProgress) preloaderProgress.style.width = '100%';
+        if (preloaderText) preloaderText.textContent = 'Loading... 100%';
+        return;
+    }
+
+    const percentage = Math.floor((loadedAssetsCount / totalAssetsToLoad) * 100);
+    if (preloaderProgress) preloaderProgress.style.width = `${percentage}%`;
+    if (preloaderText) preloaderText.textContent = `Loading... ${percentage}%`;
+}
+
+function completePreloadAsset(key) {
+    if (completedPreloadAssets.has(key)) return;
+    completedPreloadAssets.add(key);
+    loadedAssetsCount += 1;
+    updatePreloaderProgress();
+
+    if (loadedAssetsCount >= totalAssetsToLoad) {
+        setTimeout(() => {
+            if (preloader) preloader.classList.add('hidden');
+        }, 500);
+    }
+}
+
+function initHeroBeamBackground() {
+    if (!heroBg || !heroBeamsCanvas) {
+        completePreloadAsset('shader');
+        return;
+    }
+
+    const gl = heroBeamsCanvas.getContext('webgl', {
+        alpha: false,
+        antialias: true,
+        depth: false,
+        stencil: false,
+        premultipliedAlpha: false,
+        preserveDrawingBuffer: false
+    });
+    if (!gl) {
+        completePreloadAsset('shader');
+        return;
+    }
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const maxDpr = 2;
+    let width = 0;
+    let height = 0;
+    let animationFrameId = null;
+    let startTime = 0;
+    let shaderReadyReported = false;
+
+    const vertexShaderSource = `
+        attribute vec2 aPosition;
+
+        void main() {
+            gl_Position = vec4(aPosition, 0.0, 1.0);
+        }
+    `;
+
+    const fragmentShaderSource = `
+        precision highp float;
+
+        uniform float iTime;
+        uniform vec2 iResolution;
+
+        #define NUM_OCTAVES 3
+
+        float rand(vec2 n) {
+          return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+        }
+
+        float noise(vec2 p) {
+          vec2 ip = floor(p);
+          vec2 u = fract(p);
+          u = u * u * (3.0 - 2.0 * u);
+
+          float res = mix(
+            mix(rand(ip), rand(ip + vec2(1.0, 0.0)), u.x),
+            mix(rand(ip + vec2(0.0, 1.0)), rand(ip + vec2(1.0, 1.0)), u.x),
+            u.y
+          );
+          return res * res;
+        }
+
+        float fbm(vec2 x) {
+          float v = 0.0;
+          float a = 0.3;
+          vec2 shift = vec2(100.0);
+          mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+          for (int i = 0; i < NUM_OCTAVES; ++i) {
+            v += a * noise(x);
+            x = rot * x * 2.0 + shift;
+            a *= 0.4;
+          }
+          return v;
+        }
+
+        vec4 tanhApprox(vec4 x) {
+          vec4 e2 = exp(2.0 * x);
+          return (e2 - 1.0) / (e2 + 1.0);
+        }
+
+        void main() {
+          vec2 shake = vec2(sin(iTime * 1.2) * 0.005, cos(iTime * 2.1) * 0.005);
+          vec2 p = ((gl_FragCoord.xy + shake * iResolution.xy) - iResolution.xy * 0.5) / iResolution.y * mat2(6.0, -4.0, 4.0, 6.0);
+          vec2 v;
+          vec4 o = vec4(0.0);
+
+          float f = 2.0 + fbm(p + vec2(iTime * 5.0, 0.0)) * 0.5;
+
+          for (float i = 0.0; i < 35.0; i++) {
+            v = p + cos(i * i + (iTime + p.x * 0.08) * 0.025 + i * vec2(13.0, 11.0)) * 3.5 + vec2(sin(iTime * 3.0 + i) * 0.003, cos(iTime * 3.5 - i) * 0.003);
+            float tailNoise = fbm(v + vec2(iTime * 0.5, i)) * 0.3 * (1.0 - (i / 35.0));
+            vec4 auroraColors = vec4(
+              0.1 + 0.3 * sin(i * 0.2 + iTime * 0.4),
+              0.3 + 0.5 * cos(i * 0.3 + iTime * 0.5),
+              0.7 + 0.3 * sin(i * 0.4 + iTime * 0.3),
+              1.0
+            );
+            vec4 currentContribution = auroraColors * exp(sin(i * i + iTime * 0.8)) / length(max(v, vec2(v.x * f * 0.015, v.y * 1.5)));
+            float thinnessFactor = smoothstep(0.0, 1.0, i / 35.0) * 0.6;
+            o += currentContribution * (1.0 + tailNoise * 0.8) * thinnessFactor;
+          }
+
+          o = tanhApprox(pow(o / 100.0, vec4(1.6)));
+          gl_FragColor = o * 1.5;
+        }
+    `;
+
+    function compileShader(type, source) {
+        const shader = gl.createShader(type);
+        if (!shader) {
+            completePreloadAsset('shader');
+            return null;
+        }
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            console.error('Hero shader compile error:', gl.getShaderInfoLog(shader));
+            gl.deleteShader(shader);
+            completePreloadAsset('shader');
+            return null;
+        }
+
+        return shader;
+    }
+
+    const vertexShader = compileShader(gl.VERTEX_SHADER, vertexShaderSource);
+    const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
+    if (!vertexShader || !fragmentShader) {
+        completePreloadAsset('shader');
+        return;
+    }
+
+    const program = gl.createProgram();
+    if (!program) {
+        completePreloadAsset('shader');
+        return;
+    }
+
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error('Hero shader link error:', gl.getProgramInfoLog(program));
+        gl.deleteShader(vertexShader);
+        gl.deleteShader(fragmentShader);
+        gl.deleteProgram(program);
+        completePreloadAsset('shader');
+        return;
+    }
+
+    gl.useProgram(program);
+
+    const positionBuffer = gl.createBuffer();
+    if (!positionBuffer) {
+        completePreloadAsset('shader');
+        return;
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([
+            -1, -1,
+             1, -1,
+            -1,  1,
+             1,  1
+        ]),
+        gl.STATIC_DRAW
+    );
+
+    const positionLocation = gl.getAttribLocation(program, 'aPosition');
+    const timeLocation = gl.getUniformLocation(program, 'iTime');
+    const resolutionLocation = gl.getUniformLocation(program, 'iResolution');
+
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+    function resizeCanvas() {
+        const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
+        width = window.innerWidth;
+        height = window.innerHeight;
+
+        heroBeamsCanvas.width = Math.round(width * dpr);
+        heroBeamsCanvas.height = Math.round(height * dpr);
+        heroBeamsCanvas.style.width = `${width}px`;
+        heroBeamsCanvas.style.height = `${height}px`;
+        gl.viewport(0, 0, heroBeamsCanvas.width, heroBeamsCanvas.height);
+        if (resolutionLocation) {
+            gl.uniform2f(resolutionLocation, heroBeamsCanvas.width, heroBeamsCanvas.height);
+        }
+    }
+
+    function render(now, singleFrame) {
+        if (!startTime) startTime = now;
+        const time = prefersReducedMotion ? 0 : (now - startTime) * 0.001;
+
+        gl.clearColor(0, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        if (timeLocation) {
+            gl.uniform1f(timeLocation, time);
+        }
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        if (!shaderReadyReported) {
+            shaderReadyReported = true;
+            completePreloadAsset('shader');
+        }
+
+        if (!singleFrame && !prefersReducedMotion) {
+            animationFrameId = window.requestAnimationFrame((nextNow) => render(nextNow, false));
+        }
+    }
+
+    function handleResize() {
+        if (animationFrameId !== null) {
+            window.cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+
+        resizeCanvas();
+
+        if (!prefersReducedMotion) {
+            animationFrameId = window.requestAnimationFrame((nextNow) => render(nextNow, false));
+        } else {
+            render(performance.now(), true);
+        }
+    }
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+}
 
 function initHeroScrollEffect() {
     if (!heroSection || !heroBg || !heroShade || !heroContent) return;
@@ -20,7 +284,7 @@ function initHeroScrollEffect() {
         const heroTop = heroSection.getBoundingClientRect().top;
         const travelled = Math.min(Math.max(-heroTop, 0), heroHeight);
         const progress = travelled / heroHeight;
-        const shadeOpacity = Math.min(0.84, 0.66 + progress * 0.18);
+        const shadeOpacity = Math.min(0.58, 0.34 + progress * 0.24);
 
         heroBg.style.transform = `translate3d(0, ${progress * 70}px, 0) scale(${1 + progress * 0.28})`;
         heroBg.style.opacity = String(Math.max(0, 1 - progress * 1.35));
@@ -47,7 +311,7 @@ function initHeroScrollEffect() {
         window.addEventListener('resize', scheduleApplyState);
         scheduleApplyState();
     } else {
-        heroShade.style.opacity = '0.66';
+        heroShade.style.opacity = '0.34';
     }
 }
 
@@ -59,20 +323,13 @@ if (heroArrow && catalogSection) {
     });
 }
 
-// Preloader and Image Preloading
-const preloader = document.querySelector('.preloader');
-const preloaderProgress = document.querySelector('.loader-progress');
-const preloaderText = document.querySelector('.loader-text');
-
-let loadedImagesCount = 0;
-let totalImagesToLoad = 0;
 const preloadedImages = []; // Cache to store Image objects to prevent GC
 
 // Count how many images we actually need to load, and inject mobile images
 items.forEach(item => {
     const imgUrl = item.getAttribute('data-img');
     if (imgUrl) {
-        totalImagesToLoad++;
+        totalAssetsToLoad++;
         
         // Inject mobile image
         const mobileImg = document.createElement('img');
@@ -83,7 +340,10 @@ items.forEach(item => {
     }
 });
 
-if (totalImagesToLoad > 0) {
+updatePreloaderProgress();
+initHeroBeamBackground();
+
+if (items.length > 0) {
     items.forEach(item => {
         const imgUrl = item.getAttribute('data-img');
         if (imgUrl) {
@@ -91,26 +351,13 @@ if (totalImagesToLoad > 0) {
             
             // On load or error, update progress
             img.onload = img.onerror = () => {
-                loadedImagesCount++;
-                const percentage = Math.floor((loadedImagesCount / totalImagesToLoad) * 100);
-                if(preloaderProgress) preloaderProgress.style.width = percentage + '%';
-                if(preloaderText) preloaderText.textContent = `Loading... ${percentage}%`;
-                
-                if (loadedImagesCount === totalImagesToLoad) {
-                    // All images loaded
-                    setTimeout(() => {
-                        if(preloader) preloader.classList.add('hidden');
-                    }, 500); // 500ms delay to smoothly finish bar
-                }
+                completePreloadAsset(`img:${imgUrl}`);
             };
             
             img.src = imgUrl; // Start loading
             preloadedImages.push(img);
         }
     });
-} else {
-    // No images to load
-    if(preloader) preloader.classList.add('hidden');
 }
 
 const modalOverlay = document.getElementById('modal-backdrop');

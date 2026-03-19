@@ -433,10 +433,8 @@ footer .site-logo {
     top: 0;
     left: 0;
     width: 100%;
-    background-image: url('foto/beto1.jpg');
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center 75%;
+    overflow: hidden;
+    background: #000;
     transform: translate3d(0, 0, 0) scale(1);
     transform-origin: center center;
     opacity: 1;
@@ -445,9 +443,48 @@ footer .site-logo {
     will-change: transform, opacity, filter;
 }
 
+.heroEffects .bg::before,
+.heroEffects .bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.heroEffects .bg::before {
+    inset: -8%;
+    background:
+        radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.06), transparent 20%),
+        radial-gradient(circle at 75% 12%, rgba(255, 255, 255, 0.035), transparent 18%),
+        radial-gradient(circle at 48% 58%, rgba(255, 255, 255, 0.02), transparent 22%);
+    filter: blur(50px);
+    opacity: 0.3;
+    mix-blend-mode: lighten;
+}
+
+.heroEffects .bg::after {
+    background-image:
+        radial-gradient(rgba(255, 255, 255, 0.12) 0.55px, transparent 0.8px),
+        radial-gradient(rgba(255, 255, 255, 0.06) 0.45px, transparent 0.7px);
+    background-size: 3px 3px, 5px 5px;
+    background-position: 0 0, 1px 2px;
+    opacity: 0.08;
+    mix-blend-mode: soft-light;
+    animation: heroNoiseDrift 2.8s steps(4) infinite;
+}
+
+.heroEffects .hero-beams-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    filter: saturate(112%) contrast(108%);
+}
+
 .heroEffects .shade {
-    opacity: 0.66;
-    background: rgba(0, 0, 0, 0.72);
+    opacity: 0.34;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.48));
     z-index: -1;
     height: 100vh;
     position: fixed;
@@ -533,6 +570,15 @@ footer .site-logo {
     color: #f8fcff;
     opacity: 0.95;
     text-shadow: 0 0 12px rgba(176, 224, 255, 0.5);
+}
+
+@keyframes heroNoiseDrift {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    100% {
+        transform: translate3d(-6px, 5px, 0);
+    }
 }
 
 .features-grid {
@@ -707,6 +753,10 @@ footer {
     .heroEffects .shade,
     .heroEffects .arrow {
         transition: none !important;
+    }
+    .heroEffects .bg::before,
+    .heroEffects .bg::after {
+        animation: none !important;
     }
 }
 
